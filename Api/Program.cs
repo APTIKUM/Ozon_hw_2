@@ -5,7 +5,8 @@ using Api.Middleware;
 using Api.Validators;
 using Application.DTOs;
 using FluentValidation;
-using Microsoft.AspNetCore.HttpLogging;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using ProductsGrpcService = Api.Grpc.ProductsGrpcService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,23 +14,21 @@ builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers();
+builder.Services.AddGrpc(options =>
+{
+    options.Interceptors.Add<Api.Grpc.LoggingInterceptor>();
+}).AddJsonTranscoding();
 
 builder.Services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
 builder.Services.AddScoped<IValidator<GetProductsQuery>, GetProductsQueryValidator>();
 
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddHttpLogging(options =>
+builder.Services.AddGrpcSwagger();
+builder.Services.AddSwaggerGen(options =>
 {
-    options.LoggingFields = HttpLoggingFields.RequestMethod
-                            | HttpLoggingFields.RequestPath
-                            | HttpLoggingFields.RequestQuery
-                            | HttpLoggingFields.RequestBody
-                            | HttpLoggingFields.ResponseStatusCode
-                            | HttpLoggingFields.ResponseBody;
+    // HTTP DTOs and generated gRPC messages can have the same class name.
+    var defaultSchemaId = new SchemaGeneratorOptions().SchemaIdSelector;
+    options.CustomSchemaIds(type => $"{type.Namespace}.{defaultSchemaId(type)}");
 });
-
-builder.Logging.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.Information);
 
 var app = builder.Build();
 
@@ -39,10 +38,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpLogging();
-
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
+app.MapGrpcService<ProductsGrpcService>();
 
 app.Run();

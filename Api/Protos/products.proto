@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+option csharp_namespace = "Api.Grpc";
+
+package products;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+service Products {
+  rpc CreateProduct (CreateProductRequest) returns (CreateProductResponse) {
+    option (google.api.http) = {
+      post: "/grpc/products"
+      body: "*"
+    };
+  }
+  rpc GetProductById (GetProductByIdRequest) returns (ProductResponse) {
+    option (google.api.http) = {
+      get: "/grpc/products/{id}"
+    };
+  }
+  rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {
+    option (google.api.http) = {
+      get: "/grpc/products"
+    };
+  }
+}
+
+enum ProductType {
+  PRODUCT_TYPE_GENERAL = 0;
+  PRODUCT_TYPE_HOUSE_CHEMICALS = 1;
+  PRODUCT_TYPE_ELECTRONICS = 2;
+  PRODUCT_TYPE_FOOD = 3;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  // Decimal values use a dot as the decimal separator, for example "1299.90".
+  string price = 2;
+  string weight = 3;
+  ProductType type = 4;
+  int32 warehouse_number = 5;
+}
+
+message CreateProductResponse {
+  string id = 1;
+}
+
+message GetProductByIdRequest {
+  string id = 1;
+}
+
+message ProductResponse {
+  string id = 1;
+  string name = 2;
+  string price = 3;
+  string weight = 4;
+  ProductType type = 5;
+  google.protobuf.Timestamp created_at = 6;
+  int32 warehouse_number = 7;
+}
+
+message GetProductsRequest {
+  google.protobuf.Timestamp created_from = 1;
+  google.protobuf.Timestamp created_to = 2;
+  optional ProductType type = 3;
+  optional int32 warehouse_number = 4;
+  // When omitted, the server uses page 1 and page size 10.
+  optional int32 page_number = 5;
+  optional int32 page_size = 6;
+}
+
+message GetProductsResponse {
+  repeated ProductResponse items = 1;
+  int32 total_count = 2;
+  int32 page_number = 3;
+  int32 page_size = 4;
+}
