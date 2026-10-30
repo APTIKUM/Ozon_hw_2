@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories;
 public sealed class InMemoryProductRepository : IProductRepository
 {
     private readonly Dictionary<Guid, Product> _products = new();
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
 
     public Task<Guid> AddAsync(Product product)
     {
@@ -45,17 +45,25 @@ public sealed class InMemoryProductRepository : IProductRepository
 
         IEnumerable<Product> filtered = snapshot;
 
-        if (query.CreatedFrom is { } createdFrom)
-            filtered = filtered.Where(product => product.CreatedAt >= createdFrom);
+        if (query.CreatedFrom.HasValue)
+        {
+            filtered = filtered.Where(product => product.CreatedAt >= query.CreatedFrom.Value);
+        }
 
-        if (query.CreatedTo is { } createdTo)
-            filtered = filtered.Where(product => product.CreatedAt <= createdTo);
+        if (query.CreatedTo.HasValue)
+        {
+            filtered = filtered.Where(product => product.CreatedAt <= query.CreatedTo.Value);
+        }
 
-        if (query.Type is { } type)
-            filtered = filtered.Where(product => product.Type == type);
+        if (query.Type.HasValue)
+        {
+            filtered = filtered.Where(product => product.Type == query.Type.Value);
+        }
 
-        if (query.WarehouseNumber is { } warehouseNumber)
-            filtered = filtered.Where(product => product.WarehouseNumber == warehouseNumber);
+        if (query.WarehouseNumber.HasValue)
+        {
+            filtered = filtered.Where(product => product.WarehouseNumber == query.WarehouseNumber.Value);
+        }
 
         var matches = filtered.ToArray();
         var offset = (long)(query.PageNumber - 1) * query.PageSize;
