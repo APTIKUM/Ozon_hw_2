@@ -9,12 +9,22 @@ public sealed class ProductService(IProductRepository repository) : IProductServ
 {
     private readonly IProductRepository _repository = repository;
 
-    public Task<Guid> CreateAsync(Product product)
+    public Task<Guid> CreateAsync(CreateProductRequest request)
     {
-        product.Id = Guid.NewGuid();
-        product.CreatedAt = DateTimeOffset.UtcNow;
+        ArgumentNullException.ThrowIfNull(request);
 
-        return _repository.AddAsync(product);
+        var entity = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Price = request.Price,
+            Weight = request.Weight,
+            Type = request.Type,
+            CreatedAt = DateTimeOffset.UtcNow,
+            WarehouseNumber = request.WarehouseNumber
+        };
+
+        return _repository.AddAsync(entity);
     }
 
     public async Task<Product> GetByIdAsync(Guid id)
