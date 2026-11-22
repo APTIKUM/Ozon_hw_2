@@ -7,8 +7,6 @@ namespace Application.Services;
 
 public sealed class ProductService(IProductRepository repository) : IProductService
 {
-    private readonly IProductRepository _repository = repository;
-
     public Task<Guid> CreateAsync(CreateProductRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -24,18 +22,18 @@ public sealed class ProductService(IProductRepository repository) : IProductServ
             WarehouseNumber = request.WarehouseNumber
         };
 
-        return _repository.AddAsync(entity);
+        return repository.AddAsync(entity);
     }
 
     public async Task<Product> GetByIdAsync(Guid id)
     {
-        var product = await _repository.GetByIdAsync(id);
+        var product = await repository.GetByIdAsync(id);
 
         return product ?? throw new ProductNotFoundException(id);
     }
 
     public Task<PagedResult<Product>> GetPagedAsync(GetProductsQuery query)
     {
-        return _repository.GetPagedAsync(query);
+        return repository.GetPagedAsync(query);
     }
 }

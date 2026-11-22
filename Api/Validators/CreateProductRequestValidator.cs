@@ -7,7 +7,7 @@ public sealed class CreateProductRequestValidator : AbstractValidator<CreateProd
 {
     public CreateProductRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty() .MaximumLength(200);
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
 
         RuleFor(x => x.Price).GreaterThan(0);
 

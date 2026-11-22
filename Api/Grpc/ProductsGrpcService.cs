@@ -16,7 +16,8 @@ public sealed class ProductsGrpcService(
     IValidator<GetProductsQuery> queryValidator) : Products.ProductsBase
 {
     public override async Task<CreateProductResponse> CreateProduct(
-        CreateProductRequest request, ServerCallContext context)
+        CreateProductRequest request,
+        ServerCallContext context)
     {
         var dto = new CreateProductDto(
             request.Name,
@@ -32,16 +33,21 @@ public sealed class ProductsGrpcService(
     }
 
     public override async Task<ProductResponse> GetProductById(
-        GetProductByIdRequest request, ServerCallContext context)
+        GetProductByIdRequest request,
+        ServerCallContext context)
     {
         if (!Guid.TryParse(request.Id, out var id))
+        {
             throw InvalidArgument("id must be a valid GUID.");
+        }
 
-        return ToResponse(await service.GetByIdAsync(id));
+        var product = await service.GetByIdAsync(id);
+        return ToResponse(product);
     }
 
     public override async Task<GetProductsResponse> GetProducts(
-        GetProductsRequest request, ServerCallContext context)
+        GetProductsRequest request,
+        ServerCallContext context)
     {
         var query = new GetProductsQuery(
             ParseTimestamp(request.CreatedFrom, "created_from"),
@@ -60,7 +66,12 @@ public sealed class ProductsGrpcService(
             PageNumber = result.PageNumber,
             PageSize = result.PageSize
         };
-        response.Items.AddRange(result.Items.Select(ToResponse));
+
+        foreach (var product in result.Items)
+        {
+            response.Items.Add(ToResponse(product));
+        }
+
         return response;
     }
 
@@ -79,7 +90,9 @@ public sealed class ProductsGrpcService(
     {
         const NumberStyles styles = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
         if (!decimal.TryParse(value, styles, CultureInfo.InvariantCulture, out var result))
+        {
             throw InvalidArgument($"{fieldName} must be a decimal number with a dot as the decimal separator.");
+        }
 
         return result;
     }
@@ -87,7 +100,9 @@ public sealed class ProductsGrpcService(
     private static DateTimeOffset? ParseTimestamp(Timestamp? value, string fieldName)
     {
         if (value is null)
+        {
             return null;
+        }
 
         try
         {

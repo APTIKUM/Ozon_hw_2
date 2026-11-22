@@ -14,10 +14,8 @@ builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers();
-builder.Services.AddGrpc(options =>
-{
-    options.Interceptors.Add<Api.Grpc.LoggingInterceptor>();
-}).AddJsonTranscoding();
+builder.Services.AddGrpc(options => options.Interceptors.Add<Api.Grpc.LoggingInterceptor>())
+    .AddJsonTranscoding();
 
 builder.Services.AddScoped<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
 builder.Services.AddScoped<IValidator<GetProductsQuery>, GetProductsQueryValidator>();

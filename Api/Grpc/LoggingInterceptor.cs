@@ -22,8 +22,8 @@ public sealed class LoggingInterceptor(ILogger<LoggingInterceptor> logger) : Int
         }
         catch (ValidationException exception)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument,
-                string.Join("; ", exception.Errors.Select(error => error.ErrorMessage))));
+            var message = string.Join("; ", exception.Errors.Select(error => error.ErrorMessage));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, message));
         }
         catch (ProductNotFoundException exception)
         {

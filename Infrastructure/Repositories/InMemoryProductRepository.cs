@@ -45,24 +45,24 @@ public sealed class InMemoryProductRepository : IProductRepository
 
         IEnumerable<Product> filtered = snapshot;
 
-        if (query.CreatedFrom.HasValue)
+        if (query.CreatedFrom is { } createdFrom)
         {
-            filtered = filtered.Where(product => product.CreatedAt >= query.CreatedFrom.Value);
+            filtered = filtered.Where(product => product.CreatedAt >= createdFrom);
         }
 
-        if (query.CreatedTo.HasValue)
+        if (query.CreatedTo is { } createdTo)
         {
-            filtered = filtered.Where(product => product.CreatedAt <= query.CreatedTo.Value);
+            filtered = filtered.Where(product => product.CreatedAt <= createdTo);
         }
 
-        if (query.Type.HasValue)
+        if (query.Type is { } type)
         {
-            filtered = filtered.Where(product => product.Type == query.Type.Value);
+            filtered = filtered.Where(product => product.Type == type);
         }
 
-        if (query.WarehouseNumber.HasValue)
+        if (query.WarehouseNumber is { } warehouseNumber)
         {
-            filtered = filtered.Where(product => product.WarehouseNumber == query.WarehouseNumber.Value);
+            filtered = filtered.Where(product => product.WarehouseNumber == warehouseNumber);
         }
 
         var matches = filtered.ToArray();
