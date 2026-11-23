@@ -19,13 +19,7 @@ public sealed class ProductsGrpcService(
         CreateProductRequest request,
         ServerCallContext context)
     {
-        var dto = new CreateProductDto(
-            request.Name,
-            ParseDecimal(request.Price, "price"),
-            ParseDecimal(request.Weight, "weight"),
-            (DomainProductType)request.Type,
-            request.WarehouseNumber);
-
+        var dto = ToDto(request);
         await createValidator.ValidateAndThrowAsync(dto, context.CancellationToken);
         var id = await service.CreateAsync(dto);
 
@@ -43,6 +37,21 @@ public sealed class ProductsGrpcService(
 
         var product = await service.GetByIdAsync(id);
         return ToResponse(product);
+    }
+
+    public override async Task<Empty> UpdateProduct(UpdateProductRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.Id, out var id))
+        {
+            throw InvalidArgument("id must be a valid GUID.");
+        }
+
+        var product = request.Product ?? throw InvalidArgument("product is required.");
+        var dto = ToDto(product);
+        await createValidator.ValidateAndThrowAsync(dto, context.CancellationToken);
+        await service.UpdateAsync(id, dto);
+
+        return new Empty();
     }
 
     public override async Task<GetProductsResponse> GetProducts(
@@ -74,6 +83,13 @@ public sealed class ProductsGrpcService(
 
         return response;
     }
+
+    private static CreateProductDto ToDto(CreateProductRequest request) => new(
+        request.Name,
+        ParseDecimal(request.Price, "price"),
+        ParseDecimal(request.Weight, "weight"),
+        (DomainProductType)request.Type,
+        request.WarehouseNumber);
 
     private static ProductResponse ToResponse(Product product) => new()
     {

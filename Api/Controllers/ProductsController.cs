@@ -33,6 +33,18 @@ public sealed class ProductsController(
         return Ok(await service.GetByIdAsync(id));
     }
 
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(Guid id, CreateProductRequest request, CancellationToken cancellationToken)
+    {
+        await createValidator.ValidateAndThrowAsync(request, cancellationToken);
+        await service.UpdateAsync(id, request);
+
+        return NoContent();
+    }
+
     [HttpGet]
     [ProducesResponseType<PagedResult<Product>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]

@@ -36,4 +36,13 @@ public sealed class ProductService(IProductRepository repository) : IProductServ
     {
         return repository.GetPagedAsync(query);
     }
+
+    public async Task UpdateAsync(Guid id, CreateProductRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!await repository.UpdateAsync(id, request))
+        {
+            throw new ProductNotFoundException(id);
+        }
+    }
 }

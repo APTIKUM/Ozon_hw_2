@@ -10,4 +10,6 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(Guid id);
 
     Task<PagedResult<Product>> GetPagedAsync(GetProductsQuery query);
+
+    Task<bool> UpdateAsync(Guid id, CreateProductRequest request);
 }
