@@ -1,6 +1,6 @@
 using Application.Abstractions;
 using Application.Services;
-using Infrastructure.Repositories;
+using Infrastructure;
 using Api.Middleware;
 using Api.Validators;
 using Application.DTOs;
@@ -10,7 +10,10 @@ using ProductsGrpcService = Api.Grpc.ProductsGrpcService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+var connectionString = builder.Configuration.GetConnectionString("ProductsDb")
+    ?? throw new InvalidOperationException("Configure ConnectionStrings:ProductsDb to connect to PostgreSQL.");
+
+builder.Services.AddProductStorage(connectionString);
 builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddControllers();
@@ -29,6 +32,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+app.Services.MigrateProductStorage();
 
 if (app.Environment.IsDevelopment())
 {
@@ -42,3 +46,5 @@ app.MapControllers();
 app.MapGrpcService<ProductsGrpcService>();
 
 app.Run();
+
+public partial class Program;

@@ -5,6 +5,7 @@ option csharp_namespace = "Api.Grpc";
 package products;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 service Products {
@@ -22,6 +23,12 @@ service Products {
   rpc GetProducts (GetProductsRequest) returns (GetProductsResponse) {
     option (google.api.http) = {
       get: "/grpc/products"
+    };
+  }
+  rpc UpdateProduct (UpdateProductRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/grpc/products/{id}"
+      body: "product"
     };
   }
 }
@@ -44,6 +51,11 @@ message CreateProductRequest {
 
 message CreateProductResponse {
   string id = 1;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  CreateProductRequest product = 2;
 }
 
 message GetProductByIdRequest {
